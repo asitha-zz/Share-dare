@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Asitha's Ultimate Dare & Vibe Check</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=Noto+Sans+Sinhala:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    /* Aesthetic Dark Background & Charming Warm/Pastel Card Colors */
+    :root {
+      --bg-dark: #0f172a;
+      --bg-gradient: radial-gradient(circle at top left, #1e293b, #09090b);
+      --card-bg: rgba(250, 249, 246, 0.97);
+      --card-border: rgba(228, 228, 231, 0.85);
+      --text-main: #1c1917;
+      --text-muted: #57534e;
+      --accent-teal: #0d9488;
+      --accent-violet: #8b5cf6;
+      --accent-amber: #f59e0b;
+      --accent-mint: #10b981;
+      --shadow-premium: 0 25px 60px -15px rgba(0, 0, 0, 0.55), 0 0 35px rgba(139, 92, 246, 0.15);
+    }
+
+    * {
+      box-sizing: border-box; margin: 0; padding: 0;
+      font-family: 'Plus Jakarta Sans', 'Noto Sans Sinhala', sans-serif;
+      -webkit-tap-highlight-color: transparent; user-select: none;
+    }
+
+    body {
+      background: var(--bg-gradient); min-height: 100vh; display: flex;
+      align-items: center; justify-content: center; padding: 16px;
+      overflow-x: hidden; position: relative;
+    }
+
+    /* Interactive Background Canvases */
+    #rain-canvas, #ribbon-canvas, #balloon-canvas {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1;
+    }
+    #ribbon-canvas { z-index: 2; }
+    #balloon-canvas { z-index: 20; display: none; }
+
+    /* Top Bot Setup Button (Outside Card) */
+    .top-bar { position: fixed; top: 16px; right: 16px; z-index: 100; }
+    .pill-btn {
+      background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.25); color: #fff;
+      padding: 8px 14px; border-radius: 999px; font-size: 13px; font-weight: 600;
+      cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s ease;
+    }
+    .pill-btn:hover { background: rgba(255, 255, 255, 0.25); transform: translateY(-2px); }
+
+    /* Main Container Card (overflow: hidden removed to fix dropdown clipping) */
+    .app-container {
+      position: relative; z-index: 10; width: 100%; max-width: 480px;
+      background: var(--card-bg); backdrop-filter: blur(25px);
+      border: 1px solid var(--card-border); border-radius: 32px;
+      padding: 30px 24px; box-shadow: var(--shadow-premium);
+      color: var(--text-main); transition: all 0.4s ease;
+    }
+
+    .app-container.shake-alert {
+      animation: alertWobble 0.5s ease-in-out; border-color: rgba(239, 68, 68, 0.8) !important;
+      box-shadow: 0 0 30px rgba(239, 68, 68, 0.35) !important;
+    }
+    @keyframes alertWobble {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-12px) rotate(-1deg); }
+      40% { transform: translateX(12px) rotate(1deg); }
+      60% { transform: translateX(-8px); }
+      80% { transform: translateX(8px); }
+    }
+
+    /* Steps */
+    .step-view { display: none; flex-direction: column; align-items: center; text-align: center; position: relative; width: 100%; animation: fadeInSlide 0.4s ease forwards; }
+    .step-view.active { display: flex; }
+    @keyframes fadeInSlide { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Audio Buttons Inside Step 1 */
+    .audio-controls {
+      display: flex; gap: 10px; margin-bottom: 20px; justify-content: center; width: 100%;
+    }
+    .audio-btn {
+      background: #ffffff; border: 1px solid #d6d3d1; color: #44403c;
+      padding: 10px 16px; border-radius: 14px; font-size: 13.5px; font-weight: 700;
+      cursor: pointer; display: flex; align-items: center; gap: 6px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.04); transition: all 0.25s ease;
+    }
+    .audio-btn:hover { background: #f5f5f4; color: var(--accent-violet); transform: translateY(-2px); border-color: #c7d2fe; }
+
+    /* Tiny Back Button at Top inside Frame */
+    .btn-back-top {
+      align-self: flex-start; background: #f5f5f4; color: #57534e;
+      border: 1px solid #e7e5e4; padding: 6px 12px; border-radius: 8px;
+      font-size: 12.5px; font-weight: 700; cursor: pointer; margin-bottom: 15px;
+      display: flex; align-items: center; gap: 4px; transition: all 0.2s ease;
+    }
+    .btn-back-top:hover { background: #e7e5e4; color: #1c1917; }
+
+    /* Typography & Avatar */
+    .avatar-wrapper {
+      position: relative; width: 105px; height: 105px; border-radius: 50%; padding: 4px;
+      background: linear-gradient(135deg, var(--accent-violet), var(--accent-teal));
+      box-shadow: 0 10px 25px rgba(139, 92, 246, 0.25); margin-bottom: 14px;
+    }
+    .avatar-img { width: 100%; height: 100%; border-radius: 50%; border: 3px solid #ffffff; object-fit: cover; background: #e2e8f0; display: block; }
+    h1.hero-title { font-size: 24px; font-weight: 800; color: #1c1917; margin-bottom: 8px; }
+    p.sub-desc { font-size: 14px; line-height: 1.55; color: var(--text-muted); font-weight: 600; margin-bottom: 14px; }
+    .callout-hint {
+      font-size: 12px; color: #6d28d9; background: #f3e8ff; border: 1px solid #e9d5ff;
+      padding: 8px 14px; border-radius: 12px; font-weight: 600; line-height: 1.45; margin-bottom: 18px; display: inline-block;
+    }
+
+    /* Options Grid */
+    .choice-group { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0 20px; }
+    .choice-card {
+      background: #ffffff; border: 2px solid #e7e5e4; border-radius: 18px; padding: 16px 12px;
+      cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px; transition: all 0.25s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    }
+    .choice-card .icon { font-size: 32px; }
+    .choice-card .label { font-size: 15px; font-weight: 700; color: #44403c; }
+    .choice-card:hover { border-color: #d6d3d1; transform: translateY(-3px); }
+    .choice-card.selected { background: #f0fdf4; border-color: var(--accent-mint); box-shadow: 0 8px 20px rgba(16, 185, 129, 0.15); transform: scale(1.03); }
+    .choice-card.selected .label { color: #065f46; }
+
+    /* Inputs */
+    .input-field-wrap { width: 100%; text-align: left; margin-bottom: 16px; position: relative;}
+    .field-label { font-size: 13.5px; font-weight: 700; color: #44403c; margin-bottom: 6px; display: block; }
+    .custom-input, .custom-textarea {
+      width: 100%; background: #ffffff; border: 2px solid #e7e5e4; border-radius: 16px;
+      padding: 14px 16px; font-size: 14.5px; color: #1c1917; font-weight: 600; outline: none; transition: 0.2s; user-select: text;
+    }
+    .custom-input:focus, .custom-textarea:focus { border-color: var(--accent-violet); background: #ffffff; box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1); }
+    .custom-textarea { resize: none; height: 105px; }
+    .counter-badge { font-size: 12px; font-weight: 700; color: #a8a29e; position: absolute; bottom: -22px; right: 5px; }
+
+    /* Dropdown - Fixed for overflow visibility */
+    .dropdown-container { width: 100%; position: relative; margin: 12px 0 24px; text-align: left; }
+    .dropdown-btn {
+      width: 100%; background: #ffffff; border: 2px solid #e7e5e4; border-radius: 16px; padding: 16px;
+      font-size: 15px; font-weight: 700; color: #44403c; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+    }
+    .dropdown-list {
+      position: absolute; top: calc(100% + 8px); left: 0; width: 100%; max-height: 250px; overflow-y: auto;
+      background: #ffffff; border: 2px solid #e7e5e4; border-radius: 20px; padding: 8px; box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+      z-index: 100; display: none; flex-direction: column; gap: 6px;
+    }
+    .dropdown-list.show { display: flex; }
+    .dropdown-item { padding: 12px 16px; border-radius: 12px; font-size: 14.5px; font-weight: 600; color: #44403c; cursor: pointer; transition: 0.2s; }
+    .dropdown-item:hover { background: #fef3c7; color: #d97706; transform: translateX(4px); }
+
+    /* Contracts */
+    .agreement-box { background: #fffbeb; border: 2px solid #fde68a; border-radius: 20px; padding: 16px; margin: 12px 0 20px; text-align: left; width: 100%; }
+    .checkbox-row { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px dashed #fcd34d; cursor: pointer; align-items: flex-start;}
+    .checkbox-row:last-child { border-bottom: none; }
+    .custom-check { min-width: 22px; height: 22px; border-radius: 6px; border: 2px solid #d97706; background: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #fff; font-weight: bold; margin-top: 2px; }
+    .checkbox-row.checked .custom-check { background: #d97706; }
+    .checkbox-label { font-size: 13.5px; font-weight: 600; color: #78350f; line-height: 1.45; }
+
+    /* Navigation */
+    .nav-actions { width: 100%; display: flex; margin-top: 15px; }
+    .btn-next {
+      flex: 1; width: 100%; background: linear-gradient(135deg, var(--accent-teal), var(--accent-violet));
+      color: #ffffff; border: none; padding: 15px; border-radius: 16px; font-size: 16px; font-weight: 800;
+      cursor: pointer; box-shadow: 0 8px 25px rgba(139, 92, 246, 0.25); transition: 0.2s;
+    }
+    .btn-next:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(139, 92, 246, 0.35); }
+    .btn-next.btn-skip { background: #e7e5e4; color: #57534e; box-shadow: none; }
+
+    /* Step 8 Drawing Game */
+    .draw-canvas-box { width: 100%; height: 250px; background: #1c1917; border-radius: 20px; border: 2px solid #44403c; position: relative; overflow: hidden; margin-bottom: 15px; touch-action: none; box-shadow: inset 0 0 20px rgba(0,0,0,0.5);}
+    #drawCanvas { width: 100%; height: 100%; display: block; cursor: crosshair; }
+
+    /* Step 9 Runaway */
+    .runaway-arena { position: relative; width: 100%; height: 180px; margin: 15px 0; background: #f5f5f4; border-radius: 22px; border: 2px dashed #d6d3d1; overflow: hidden; }
+    .btn-yes { position: absolute; top: 50%; left: 30%; transform: translate(-50%, -50%); background: #10b981; color: #fff; border: none; padding: 14px 28px; border-radius: 14px; font-size: 18px; font-weight: 800; cursor: pointer; z-index: 5; box-shadow: 0 8px 20px rgba(16,185,129,0.3);}
+    .btn-no-runaway { position: absolute; top: 50%; left: 70%; transform: translate(-50%, -50%); background: #f43f5e; color: #fff; border: none; padding: 14px 26px; border-radius: 14px; font-size: 17px; font-weight: 800; cursor: pointer; z-index: 10; transition: all 0.35s cubic-bezier(0.2,0.8,0.2,1); }
+
+    /* Modal */
+    .modal-backdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(8px); z-index: 999; display: none; align-items: center; justify-content: center; padding: 20px; }
+    .modal-backdrop.show { display: flex; }
+    .modal-box { background: #faf9f6; border-radius: 28px; padding: 26px; width: 100%; max-width: 400px; text-align: left;}
+  </style>
+</head>
+<body>
+
+  <!-- Background Canvases -->
+  <canvas id="rain-canvas"></canvas>
+  <canvas id="ribbon-canvas"></canvas>
+  <canvas id="balloon-canvas"></canvas>
+
+  <main class="app-container" id="mainContainer">
+    
+    <!-- STEP 1 -->
+    <section class="step-view active" id="step1">
+      
+      <!-- Audio Buttons Moved Here (Above Photo) -->
+      <div class="audio-controls">
+        <button class="audio-btn" id="soundToggleBtn" onclick="toggleMute()">
+          <span id="soundIcon">🔊</span> Audio
+        </button>
+        <button class="audio-btn" onclick="playTestSound()">🔔 Test Sound</button>
+      </div>
+
+      <div class="avatar-wrapper">
+        <img src="asitha.jpg" alt="Asitha" class="avatar-img" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=Asitha'">
+      </div>
+      
+      <h1 class="hero-title">Hii Hii I'm Asitha</h1>
+      <p class="sub-desc">මේක වෙනස්ම Dare එකක්. අපි බලමු ඔයාගෙයි මගෙයි අතරෙ Relationship එක මොන වගේද කියලා.</p>
+      
+      <div class="callout-hint">
+        (වෙනස් ම අත්දැකීමක් ගැනීමට අවශ්‍යයි නම් Desktop එකක් හෝ Laptop එකක් භාවිතා කරන්න)<br>
+        (ඔයාගෙ Media Volume එකත් වැඩි කර ගන්න හොදේ 🔊)
+      </div>
+      
+      <p style="font-size:14px; font-weight:800; color:#44403c; margin-bottom:4px;">ඔයා කොල්ලෙක්ද කෙල්ලෙක්ද?</p>
+      
+      <div class="choice-group">
+        <div class="choice-card" id="genderBoy" onclick="selectGender('Boy')">
+          <span class="icon">👦</span><span class="label">කොල්ලෙක්</span>
+        </div>
+        <div class="choice-card" id="genderGirl" onclick="selectGender('Girl')">
+          <span class="icon">👧</span><span class="label">කෙල්ලෙක්</span>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <button class="btn-next" onclick="goToStep(2)">Next ➔</button>
+      </div>
+    </section>
+
+    <!-- STEP 2 -->
+    <section class="step-view" id="step2">
+      <button class="btn-back-top" onclick="goToStep(1)">❮ Back</button>
+      <h2 style="font-size:22px; font-weight:800; margin-bottom:18px;">ඔයා ගැන කියන්න ✍️</h2>
+      <div class="input-field-wrap">
+        <label class="field-label">1. ඔයාගෙ නම මොකද්ද?</label>
+        <input type="text" id="inputName" class="custom-input" placeholder="ඔයාගෙ නම type කරන්න...">
+      </div>
+      <div class="input-field-wrap">
+        <label class="field-label">2. ඔයාගෙ ගෙවල් කොහෙද?</label>
+        <input type="text" id="inputHometown" class="custom-input" placeholder="ගම හෝ නගරය...">
+      </div>
+      <div class="nav-actions">
+        <button class="btn-next" onclick="validateStep2()">Next ➔</button>
+      </div>
+    </section>
+
+    <!-- STEP 3 -->
+    <section class="step-view" id="step3">
+      <button class="btn-back-top" onclick="goToStep(2)">❮ Back</button>
+      <h2 style="font-size:20px; font-weight:800; margin-bottom:10px;">අපේ Relationship එක? 🤝</h2>
+      <div class="dropdown-container">
+        <div class="dropdown-btn" id="dropdownBtn" onclick="toggleDropdown()">
+          <span id="selectedRelationText">සම්බන්ධතාවය තෝරන්න...</span> ▼
+        </div>
+        <div class="dropdown-list" id="dropdownList">
+          <div class="dropdown-item" onclick="chooseRelation('අයියා')">👑 අයියා</div>
+          <div class="dropdown-item" onclick="chooseRelation('මල්ලි')">🧢 මල්ලි</div>
+          <div class="dropdown-item" onclick="chooseRelation('යාලුවෙක්')">🤝 යාලුවෙක්</div>
+          <div class="dropdown-item" onclick="chooseRelation('හොඳම යාලුවෙක්')">💎 හොඳම යාලුවෙක්</div>
+          <div class="dropdown-item" onclick="chooseRelation('සහෝදරයෙක්')">🫂 සහෝදරයෙක්</div>
+          <div class="dropdown-item" onclick="chooseRelation('තරහ කාරයෙක්')">⚡ තරහ කාරයෙක්</div>
+          <div class="dropdown-item" onclick="chooseRelation('මොකෙක්වත් නෙවෙයි')">🗿 මොකෙක්වත් නෙවෙයි</div>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <button class="btn-next" onclick="validateStep3()">Next ➔</button>
+      </div>
+    </section>
+
+    <!-- STEP 4 -->
+    <section class="step-view" id="step4">
+      <button class="btn-back-top" onclick="goToStep(3)">❮ Back</button>
+      <h2 style="font-size:20px; font-weight:800; margin-bottom:10px;">ඔයාට මම ගැන හිතෙන්නෙ මොකද්ද? 💭</h2>
+      <div class="input-field-wrap">
+        <textarea id="thoughtsInput" class="custom-textarea" maxlength="100" placeholder="ඔයාට මම ගැන හිතෙන ඕනම දෙයක් ලියන්න (කියන්න දෙයක් නැත්තම් Skip කරන්න හොදේ)" oninput="handleThoughtsInput()"></textarea>
+        <div class="counter-badge" id="charCounter">0/100</div>
+      </div>
+      <div class="nav-actions" style="margin-top:25px;">
+        <button class="btn-next btn-skip" id="step4Btn" onclick="goToStep(5)">Skip ⏩</button>
+      </div>
+    </section>
+
+    <!-- STEP 5 -->
+    <section class="step-view" id="step5">
+      <button class="btn-back-top" onclick="goToStep(4)">❮ Back</button>
+      <h2 style="font-size:20px; font-weight:800; margin-bottom:8px;">ඔයාට මාත් එක්ක පරන තරහක් තියේද? 🤫</h2>
+      <div class="input-field-wrap">
+        <textarea id="grudgeInput" class="custom-textarea" placeholder="( තියෙන තරහ ඔක්කොම පිට කරන්න හොදේ. මට පෙන්නන්නෙ නෑ )" oninput="handleGrudgeInput()"></textarea>
+      </div>
+      <div class="nav-actions">
+        <button class="btn-next" id="step5Btn" onclick="goToStep(6)">නෑ 😇</button>
+      </div>
+    </section>
+
+    <!-- STEP 6 -->
+    <section class="step-view" id="step6">
+      <button class="btn-back-top" onclick="goToStep(5)">❮ Back</button>
+      <h2 style="font-size:20px; font-weight:800; margin-bottom:6px;">නිල Friendship ගිවිසුම 📜⚖️</h2>
+      <p style="font-size:13px; color:#57534e; font-weight:600;">මේ Relationship එක legal කරන්න පහත කොන්දේසි 3ට එකඟ වෙන්න</p>
+      <div class="agreement-box">
+        <div class="checkbox-row" id="checkRow1" onclick="toggleContract(1)">
+          <div class="custom-check" id="checkIcon1"></div>
+          <div class="checkbox-label">1. මම මැසේජ් එකක් දැම්මම Seen දාලා දවස් ගණන් මඟහරින්නෙ නෑ.</div>
+        </div>
+        <div class="checkbox-row" id="checkRow2" onclick="toggleContract(2)">
+          <div class="custom-check" id="checkIcon2"></div>
+          <div class="checkbox-label">2. මගේ ඊළඟ Birthday එකට අනිවාර්යයෙන්ම Gift එකක් දෙනවා.</div>
+        </div>
+        <div class="checkbox-row" id="checkRow3" onclick="toggleContract(3)">
+          <div class="custom-check" id="checkIcon3"></div>
+          <div class="checkbox-label">3. මේ Dare එකේ මම ලියපු දේවල් මම ජීවිතේට Asitha ට කියන්නෙ නෑ.</div>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <button class="btn-next" onclick="submitDareFinal()">මම එකඟයි ✍️</button>
+      </div>
+    </section>
+
+    <!-- STEP 7 -->
+    <section class="step-view" id="step7">
+      <div style="font-size:52px; margin-bottom:8px;">🎉✨</div>
+      <h2 style="font-size:23px; font-weight:800; margin-bottom:6px; color:#1c1917;">Thank You for Playing! ❤️</h2>
+      <p class="sub-desc" style="margin-bottom:14px;">ඔයාගෙ responses සාර්ථකව සටහන් වුණා! ඔයා මරු යාලුවෙක්! 😂</p>
+      
+      <div style="background:#ffffff; border:2px solid #e7e5e4; padding:16px; border-radius:20px; width:100%; text-align:left; font-size:14.5px; line-height:1.7; margin-bottom:18px;">
+        <div>👤 <b>Name:</b> <span id="summaryName" style="color:var(--accent-violet); font-weight:700;"></span></div>
+        <div>📍 <b>Village:</b> <span id="summaryHometown" style="color:var(--accent-violet); font-weight:700;"></span></div>
+        <div>🚻 <b>Gender:</b> <span id="summaryGender" style="color:var(--accent-violet); font-weight:700;"></span></div>
+        <div>🤝 <b>Relationship:</b> <span id="summaryRelation" style="color:var(--accent-violet); font-weight:700;"></span></div>
+        <div>💭 <b>Thoughts:</b> <span id="summaryThoughts" style="color:#57534e; font-weight:600;"></span></div>
+      </div>
+      <button class="btn-next" style="background:linear-gradient(135deg, #f59e0b, #ef4444);" onclick="goToStep(8)">
+        තවත් ආතල් එකක් ගමුද 😎🔥
+      </button>
+    </section>
+
+    <!-- STEP 8 -->
+    <section class="step-view" id="step8">
+      <button class="btn-back-top" onclick="goToStep(7)">❮ Back</button>
+      <h2 style="font-size:21px; font-weight:800; margin-bottom:6px;">Neon Glow Drawing Pad 🎨✨</h2>
+      <p class="sub-desc">Cursor එකෙන් හෝ ඇඟිල්ලෙන් screen එකේ ඕනම දෙයක් අඳින්න!</p>
+      <div class="draw-canvas-box" id="drawBox">
+        <canvas id="drawCanvas"></canvas>
+      </div>
+      <div style="width:100%; display:flex; justify-content:space-between; margin-bottom:15px;">
+        <button class="btn-back-top" style="margin-bottom:0;" onclick="clearDrawCanvas()">🗑️ Clear Canvas</button>
+      </div>
+      <button class="btn-next" onclick="goToStep(9)">ඔන්න තවත් එකක් ➔</button>
+    </section>
+
+    <!-- STEP 9 -->
+    <section class="step-view" id="step9">
+      <button class="btn-back-top" onclick="goToStep(8)">❮ Back</button>
+      <div style="font-size:46px; margin-bottom:8px;">😏💡</div>
+      <h2 style="font-size:22px; font-weight:800; margin-bottom:8px; line-height:1.4;">ඔයාටත් මේ වගේ එකක් හදා ගන්න ඕනද?</h2>
+      <div class="runaway-arena" id="runawayArena">
+        <button class="btn-yes" onclick="handleYesButton()">ඔව් 😍</button>
+        <button class="btn-no-runaway" id="runawayBtn" onmouseenter="dodgeButton(event)" ontouchstart="dodgeButton(event)">නෑ 😜</button>
+      </div>
+    </section>
+
+    <!-- STEP 10 -->
+    <section class="step-view" id="step10">
+      <div style="font-size:56px; margin-bottom:10px;">🎈🥳🎉</div>
+      <h2 style="font-size:21px; font-weight:800; margin-bottom:14px; color:#ef4444; line-height:1.45;">
+        "මම මේක දවස් ගානක් තිස්සෙ නිදි මරා ගෙන හැදුවෙ... ඕන නම් හදා ගනින් 🥱😂"
+      </h2>
+      <button class="btn-next" style="background:linear-gradient(135deg, #25D366, #128C7E);" onclick="shareWhatsApp()">
+        Share on WhatsApp 📲
+      </button>
+    </section>
+
+  </main>
+
+  <!-- Telegram Config Modal -->
+  <div class="modal-backdrop" id="settingsModal">
+    <div class="modal-box">
+      <h3 style="font-size:18px; font-weight:800; margin-bottom:12px; color:#1c1917;">Telegram Setup 🤖</h3>
+      <div class="input-field-wrap">
+        <label class="field-label">Bot Token (@BotFather)</label>
+        <input type="text" id="tgTokenInput" class="custom-input">
+      </div>
+      <div class="input-field-wrap">
+        <label class="field-label">Chat ID (@userinfobot)</label>
+        <input type="text" id="tgChatIdInput" class="custom-input">
+      </div>
+      <div class="nav-actions" style="gap:10px;">
+        <button class="btn-back-top" style="flex:1; justify-content:center; margin:0;" onclick="closeSettingsModal()">Cancel</button>
+        <button class="btn-next" style="flex:1; padding:10px;" onclick="saveTgSettings()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ========================================================
+       STATE & FULL AUDIO ENGINE WITH TEST BUTTON
+    ======================================================== */
+    const state = {
+      gender: null, name: '', hometown: '', relationship: null, thoughts: '', grudge: 'නෑ (කිසිම තරහක් නෑ)',
+      telegramToken: '8793016215:AAH40-qhv31D8yPVB2aTC4J7xw4HZVXcY1c',
+      telegramChatId: '8267265124'
+    };
+
+    let audioMuted = false;
+    let audioCtx = null;
+
+    function getAudioCtx() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      return audioCtx;
+    }
+
+    function toggleMute() {
+      audioMuted = !audioMuted;
+      document.getElementById('soundIcon').innerText = audioMuted ? '🔇' : '🔊';
+      const btn = document.getElementById('soundToggleBtn');
+      btn.innerHTML = `<span id="soundIcon">${audioMuted ? '🔇' : '🔊'}</span> ${audioMuted ? 'Audio Off' : 'Audio On'}`;
+      if (!audioMuted) playNote(523.25, 'sine', 0.15, 0.2);
+    }
+
+    function playNote(freq, type = 'sine', duration = 0.2, gainVol = 0.25) {
+      if (audioMuted) return;
+      try {
+        const ctx = getAudioCtx(); const osc = ctx.createOscillator(); const gain = ctx.createGain();
+        osc.type = type; osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        gain.gain.setValueAtTime(gainVol, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+        osc.connect(gain); gain.connect(ctx.destination); osc.start(); osc.stop(ctx.currentTime + duration);
+      } catch (e) {}
+    }
+
+    // Bell Test Sound functionality
+    function playTestSound() {
+      if (audioMuted) { alert('කරුණාකර Audio On කරන්න!'); return; }
+      playNote(880, 'sine', 0.1, 0.15);
+      setTimeout(() => playNote(1046.50, 'sine', 0.15, 0.2), 100);
+      setTimeout(() => playNote(1318.51, 'sine', 0.25, 0.2), 250);
+    }
+
+    function playBoySound() {
+      if (audioMuted) return;
+      try {
+        const ctx = getAudioCtx(); const osc = ctx.createOscillator(); const gain = ctx.createGain();
+        osc.type = 'triangle'; osc.frequency.setValueAtTime(140, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(70, ctx.currentTime + 0.18);
+        gain.gain.setValueAtTime(0.4, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
+        osc.connect(gain); gain.connect(ctx.destination); osc.start(); osc.stop(ctx.currentTime + 0.18);
+      } catch(e) {}
+    }
+
+    function playGirlSound() { if (audioMuted) return; playNote(880, 'sine', 0.25, 0.2); setTimeout(() => playNote(1318.51, 'sine', 0.35, 0.15), 60); }
+    function playNextSound() { if (audioMuted) return; const notes = [440, 554.37, 659.25]; notes.forEach((freq, idx) => { setTimeout(() => playNote(freq, 'sine', 0.18, 0.18), idx * 70); }); }
+    function playBackSound() { if (audioMuted) return; playNote(587.33, 'sine', 0.12, 0.15); setTimeout(() => playNote(392.00, 'sine', 0.18, 0.18), 70); }
+    function playWarningSiren() {
+      if (audioMuted) return;
+      try {
+        const ctx = getAudioCtx(); const osc = ctx.createOscillator(); const gain = ctx.createGain();
+        osc.type = 'sawtooth'; osc.frequency.setValueAtTime(350, ctx.currentTime); osc.frequency.linearRampToValueAtTime(700, ctx.currentTime + 0.15); osc.frequency.linearRampToValueAtTime(350, ctx.currentTime + 0.3);
+        gain.gain.setValueAtTime(0.2, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+        osc.connect(gain); gain.connect(ctx.destination); osc.start(); osc.stop(ctx.currentTime + 0.35);
+      } catch(e) {}
+    }
+    function playDodgeSound() { if (audioMuted) return; playNote(650 + Math.random() * 200, 'sine', 0.12, 0.15); }
+    function playCelebrationSound() { if (audioMuted) return; const fanfare = [523.25, 659.25, 783.99, 1046.50]; fanfare.forEach((f, i) => { setTimeout(() => playNote(f, 'triangle', 0.25, 0.3), i * 90); }); }
+
+    /* ========================================================
+       STEP NAVIGATION & VALIDATION
+    ======================================================== */
+    let currentStep = 1;
+
+    function goToStep(stepNum) {
+      if (stepNum > currentStep) {
+        if (currentStep === 1 && !state.gender) { triggerAlert(); return; }
+        playNextSound();
+      } else { playBackSound(); }
+
+      document.querySelectorAll('.step-view').forEach(s => s.classList.remove('active'));
+      document.getElementById(`step${stepNum}`).classList.add('active');
+      currentStep = stepNum;
+
+      if (stepNum === 8) setTimeout(initDrawCanvas, 100);
+      if (stepNum === 9) resetRunawayBtn();
+      if (stepNum === 10) startBalloons();
+    }
+
+    function triggerAlert() {
+      playWarningSiren();
+      const container = document.getElementById('mainContainer');
+      container.classList.add('shake-alert');
+      setTimeout(() => container.classList.remove('shake-alert'), 550);
+    }
+
+    function selectGender(gen) {
+      state.gender = gen;
+      document.getElementById('genderBoy').classList.toggle('selected', gen === 'Boy');
+      document.getElementById('genderGirl').classList.toggle('selected', gen === 'Girl');
+      if (gen === 'Boy') playBoySound(); else playGirlSound();
+    }
+
+    function validateStep2() {
+      state.name = document.getElementById('inputName').value.trim();
+      state.hometown = document.getElementById('inputHometown').value.trim();
+      if (!state.name || !state.hometown) triggerAlert(); else goToStep(3);
+    }
+
+    function toggleDropdown() { document.getElementById('dropdownList').classList.toggle('show'); playNote(400, 'sine', 0.1, 0.1); }
+    function chooseRelation(rel) { state.relationship = rel; document.getElementById('selectedRelationText').innerText = rel; toggleDropdown(); playGirlSound(); }
+    function validateStep3() { if (!state.relationship) triggerAlert(); else goToStep(4); }
+
+    function handleThoughtsInput() {
+      const val = document.getElementById('thoughtsInput').value;
+      document.getElementById('charCounter').innerText = `${val.length}/100`;
+      state.thoughts = val;
+      const btn = document.getElementById('step4Btn');
+      if (val.trim().length > 0) { btn.innerText = 'Next ➔'; btn.classList.remove('btn-skip'); } else { btn.innerText = 'Skip ⏩'; btn.classList.add('btn-skip'); }
+    }
+
+    function handleGrudgeInput() {
+      const val = document.getElementById('grudgeInput').value;
+      const btn = document.getElementById('step5Btn');
+      if (val.trim().length > 0) { state.grudge = val; btn.innerText = 'Next ➔'; } else { state.grudge = 'නෑ (කිසිම තරහක් නෑ)'; btn.innerText = 'නෑ 😇'; }
+    }
+
+    const contracts = { 1: false, 2: false, 3: false };
+    function toggleContract(id) {
+      contracts[id] = !contracts[id];
+      document.getElementById(`checkRow${id}`).classList.toggle('checked', contracts[id]);
+      document.getElementById(`checkIcon${id}`).innerText = contracts[id] ? '✓' : '';
+      playNote(450 + id * 80, 'triangle', 0.15, 0.2);
+    }
+
+    function submitDareFinal() {
+      if (!contracts[1] || !contracts[2] || !contracts[3]) { triggerAlert(); return; }
+      
+      document.getElementById('summaryName').innerText = state.name;
+      document.getElementById('summaryHometown').innerText = state.hometown;
+      document.getElementById('summaryGender').innerText = state.gender === 'Boy' ? '👦 කොල්ලෙක්' : '👧 කෙල්ලෙක්';
+      document.getElementById('summaryRelation').innerText = state.relationship;
+      document.getElementById('summaryThoughts').innerText = state.thoughts || '(කියන්න කිසිවක් සටහන් කර නැත)';
+
+      sendToTelegram();
+      goToStep(7);
+      playCelebrationSound();
+    }
+
+    function sendToTelegram() {
+      if (!state.telegramToken || !state.telegramChatId) return;
+      
+      const text = `🔥 New Dare Response!\n\n👤 Name: ${state.name}\n📍 Village: ${state.hometown}\n🚻 Gender: ${state.gender}\n🤝 Relation: ${state.relationship}\n💭 Thoughts: ${state.thoughts}\n🤫 Grudge: ${state.grudge}`;
+      
+      // අර ඔයා බ්‍රවුසරයෙන් Test කරපු විදියටම URL එක හදලා යවනවා
+      const url = `https://api.telegram.org/bot${state.telegramToken}/sendMessage?chat_id=${state.telegramChatId}&text=${encodeURIComponent(text)}`;
+      
+      fetch(url).catch(error => {
+        // රහස ආරක්ෂිතයි 🤫
+      });
+    }
+
+    // WhatsApp Share Function
+    function shareWhatsApp() {
+      const url = window.location.href;
+      const text = encodeURIComponent(`මචං Asitha හදපු මේ Fun Dare එක බලපන්කො! පට්ට ආතල් 😂🔥: ${url}`);
+      window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
+    }
+
+    /* Modal */
+    function openSettingsModal() { document.getElementById('tgTokenInput').value = state.telegramToken; document.getElementById('tgChatIdInput').value = state.telegramChatId; document.getElementById('settingsModal').classList.add('show'); }
+    function closeSettingsModal() { document.getElementById('settingsModal').classList.remove('show'); }
+    function saveTgSettings() { state.telegramToken = document.getElementById('tgTokenInput').value.trim(); state.telegramChatId = document.getElementById('tgChatIdInput').value.trim(); localStorage.setItem('asitha_tg_token', state.telegramToken); localStorage.setItem('asitha_tg_chat_id', state.telegramChatId); closeSettingsModal(); alert('Saved!'); }
+
+    /* STEP 8: DRAWING */
+    let drawCanvas, drawCtx, isDrawing = false, drawHue = 0;
+    function initDrawCanvas() {
+      drawCanvas = document.getElementById('drawCanvas'); const box = document.getElementById('drawBox');
+      drawCanvas.width = box.clientWidth; drawCanvas.height = box.clientHeight;
+      drawCtx = drawCanvas.getContext('2d'); drawCtx.lineCap = 'round'; drawCtx.lineJoin = 'round';
+      
+      const startDraw = (e) => { isDrawing = true; const r = drawCanvas.getBoundingClientRect(); drawCtx.beginPath(); drawCtx.moveTo((e.touches?e.touches[0].clientX:e.clientX)-r.left, (e.touches?e.touches[0].clientY:e.clientY)-r.top); };
+      const drawMove = (e) => { if (!isDrawing) return; const r = drawCanvas.getBoundingClientRect(); drawHue = (drawHue+3)%360; drawCtx.strokeStyle=`hsl(${drawHue},100%,65%)`; drawCtx.shadowColor=drawCtx.strokeStyle; drawCtx.shadowBlur=10; drawCtx.lineWidth=5; drawCtx.lineTo((e.touches?e.touches[0].clientX:e.clientX)-r.left, (e.touches?e.touches[0].clientY:e.clientY)-r.top); drawCtx.stroke(); };
+      const stopDraw = () => isDrawing = false;
+      
+      drawCanvas.onmousedown = startDraw; drawCanvas.onmousemove = drawMove; window.onmouseup = stopDraw;
+      drawCanvas.ontouchstart = (e) => { e.preventDefault(); startDraw(e); }; drawCanvas.ontouchmove = (e) => { e.preventDefault(); drawMove(e); }; drawCanvas.ontouchend = stopDraw;
+    }
+    function clearDrawCanvas() { if(drawCtx) drawCtx.clearRect(0,0,drawCanvas.width,drawCanvas.height); playNote(300, 'sine', 0.15, 0.2); }
+
+    /* STEP 9: RUNAWAY */
+    function resetRunawayBtn() { const btn = document.getElementById('runawayBtn'); btn.style.left = '70%'; btn.style.top = '50%'; btn.style.transform = 'translate(-50%, -50%)'; }
+    function dodgeButton(e) {
+      if (e) e.preventDefault(); const btn = document.getElementById('runawayBtn'); const arena = document.getElementById('runawayArena');
+      const nx = Math.max(15, Math.floor(Math.random()*(arena.clientWidth-110))); const ny = Math.max(15, Math.floor(Math.random()*(arena.clientHeight-60)));
+      btn.style.left = `${nx}px`; btn.style.top = `${ny}px`; btn.style.transform = `scale(0.95) rotate(${(Math.random()-0.5)*20}deg)`; playDodgeSound();
+    }
+    function handleYesButton() { playCelebrationSound(); goToStep(10); }
+
+    /* BACKGROUNDS & BALLOONS */
+    const rainCanvas = document.getElementById('rain-canvas'), rainCtx = rainCanvas.getContext('2d');
+    const ribbonCanvas = document.getElementById('ribbon-canvas'), ribbonCtx = ribbonCanvas.getContext('2d');
+    const balloonCanvas = document.getElementById('balloon-canvas'), balloonCtx = balloonCanvas.getContext('2d');
+    let particles = [], trailPoints = [], hueCounter = 0, balloons = [], balloonAnimationActive = false;
+
+    function resizeCanvases() {
+      rainCanvas.width = ribbonCanvas.width = window.innerWidth;
+      rainCanvas.height = ribbonCanvas.height = window.innerHeight;
+      if (balloonAnimationActive) { balloonCanvas.width = window.innerWidth; balloonCanvas.height = window.innerHeight; }
+    }
+    window.addEventListener('resize', resizeCanvases);
+
+    for (let i = 0; i < 40; i++) particles.push({ x: Math.random()*window.innerWidth, y: Math.random()*window.innerHeight, s: Math.random()*5+3, sp: Math.random()*1.5+0.8, type: Math.floor(Math.random()*3), a: 0, rs: (Math.random()-0.5)*0.04, hue: Math.random()>0.5?185:230 });
+
+    function animateBG() {
+      rainCtx.clearRect(0,0,rainCanvas.width,rainCanvas.height);
+      particles.forEach(p => {
+        p.y += p.sp; p.a += p.rs; if(p.y>rainCanvas.height+20) { p.y=-20; p.x=Math.random()*rainCanvas.width; }
+        rainCtx.save(); rainCtx.translate(p.x,p.y); rainCtx.rotate(p.a); rainCtx.strokeStyle = `hsla(${p.hue},85%,65%,0.3)`; rainCtx.lineWidth=1.2;
+        rainCtx.beginPath(); if(p.type===0) rainCtx.arc(0,0,p.s/2,0,Math.PI*2); else if(p.type===1) rainCtx.rect(-p.s/2,-p.s/2,p.s,p.s); else { rainCtx.moveTo(0,-p.s/2); rainCtx.lineTo(p.s/2,p.s/2); rainCtx.lineTo(-p.s/2,p.s/2); rainCtx.closePath(); } rainCtx.stroke(); rainCtx.restore();
+      });
+
+      ribbonCtx.clearRect(0,0,ribbonCanvas.width,ribbonCanvas.height);
+      for (let i=0; i<trailPoints.length; i++) trailPoints[i].age++; trailPoints = trailPoints.filter(p=>p.age<35);
+      if (trailPoints.length>2) {
+        for (let i=1; i<trailPoints.length; i++) {
+          let p1 = trailPoints[i-1], p2 = trailPoints[i], life = 1-(p2.age/35);
+          ribbonCtx.beginPath(); ribbonCtx.moveTo(p1.x,p1.y); ribbonCtx.lineTo(p2.x,p2.y);
+          ribbonCtx.strokeStyle = `hsla(${p2.hue},95%,60%,${life*0.8})`; ribbonCtx.lineWidth = life*8+2;
+          ribbonCtx.lineCap = 'round'; ribbonCtx.shadowBlur = 12; ribbonCtx.shadowColor = `hsl(${p2.hue},100%,65%)`; ribbonCtx.stroke();
+        }
+      }
+      requestAnimationFrame(animateBG);
+    }
+
+    window.addEventListener('mousemove', e=>{ hueCounter=(hueCounter+4)%360; trailPoints.push({x:e.clientX, y:e.clientY, age:0, hue:hueCounter}); });
+    window.addEventListener('touchmove', e=>{ hueCounter=(hueCounter+4)%360; trailPoints.push({x:e.touches[0].clientX, y:e.touches[0].clientY, age:0, hue:hueCounter}); }, {passive:true});
+
+    function startBalloons() {
+      balloonCanvas.style.display = 'block'; balloonCanvas.width = window.innerWidth; balloonCanvas.height = window.innerHeight;
+      balloons = []; for(let i=0; i<35; i++) balloons.push({ x:Math.random()*window.innerWidth, y:window.innerHeight+Math.random()*200, r:Math.random()*18+20, sp:Math.random()*2+1.8, c:['#ef4444','#f59e0b','#10b981','#3b82f6','#8b5cf6','#ec4899'][Math.floor(Math.random()*6)], w:Math.random()*Math.PI, ws:Math.random()*0.03+0.02 });
+      if(!balloonAnimationActive) { balloonAnimationActive = true; animateBalloons(); }
+    }
+    function animateBalloons() {
+      if(!balloonAnimationActive) return; balloonCtx.clearRect(0,0,balloonCanvas.width,balloonCanvas.height);
+      balloons.forEach(b=>{
+        b.y-=b.sp; b.w+=b.ws; b.x+=Math.sin(b.w)*1.2; if(b.y<-80) {b.y=window.innerHeight+60; b.x=Math.random()*window.innerWidth;}
+        balloonCtx.save(); balloonCtx.beginPath(); balloonCtx.ellipse(b.x,b.y,b.r*0.8,b.r,0,0,Math.PI*2); balloonCtx.fillStyle=b.c; balloonCtx.fill();
+        balloonCtx.beginPath(); balloonCtx.moveTo(b.x,b.y+b.r+6); balloonCtx.quadraticCurveTo(b.x+Math.sin(b.w)*8,b.y+b.r+25,b.x,b.y+b.r+45); balloonCtx.strokeStyle='rgba(255,255,255,0.6)'; balloonCtx.lineWidth=1.2; balloonCtx.stroke(); balloonCtx.restore();
+      });
+      requestAnimationFrame(animateBalloons);
+    }
+
+    window.onload = () => { resizeCanvases(); animateBG(); };
+  </script>
+</body>
+</html>
